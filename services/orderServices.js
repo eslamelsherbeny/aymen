@@ -193,16 +193,14 @@ const createCardOrder = async (session, next) => {
 
 exports.webhookCheckout = asyncHandler(async (req, res, next) => {
   console.log("Webhook received:", req.body);
+  const endpointSecret =
+    "whsec_0bae2fa8f9d49733db9547f23dc3c9ac608129cd775da56e38af3d951d4c4032";
   const sig = req.headers["stripe-signature"];
 
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      "whsec_laAwwXcTpTHOvd52CkxxKGR0jkfpOCOf"
-    );
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
     console.log("Webhook Error:", err.message);
     return res

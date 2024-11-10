@@ -204,6 +204,7 @@ exports.webhookCheckout = asyncHandler(async (req, res, next) => {
       sig,
       "whsec_laAwwXcTpTHOvd52CkxxKGR0jkfpOCOf"
     );
+    console.log("Webhook verified:", event.id);
   } catch (err) {
     console.log("Webhook Error:", err.message);
     return res

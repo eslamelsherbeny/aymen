@@ -14,10 +14,21 @@ const mountRoutes = require("./routes");
 const { webhookCheckout } = require("./services/orderServices");
 
 dotenv.config();
-
 dbConnection();
 
 const app = express();
+
+app.use(cors());
+
+app.options("*", cors());
+
+app.use(compression());
+
+app.post(
+  "/webhook-checkout",
+  express.raw({ type: "application/json" }),
+  webhookCheckout
+);
 
 app.use(express.json());
 
@@ -38,18 +49,6 @@ app.use("*", (req, res, next) => {
 });
 
 app.use(globalError);
-
-app.use(cors());
-
-app.options("*", cors());
-
-app.use(compression());
-
-app.post(
-  "/webhook-checkout",
-  express.raw({ type: "application/json" }),
-  webhookCheckout
-);
 
 const PORT = process.env.PORT || 5000;
 

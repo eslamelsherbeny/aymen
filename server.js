@@ -27,6 +27,10 @@ if (process.env.NODE_ENV !== "production") {
 
 mountRoutes(app);
 
+app.get("/", (req, res) => {
+  res.send("Welcome to the API");
+});
+
 app.use("*", (req, res, next) => {
   next(new ApiError(`Cant't find this route ${req.originalUrl} !`, 404));
 });

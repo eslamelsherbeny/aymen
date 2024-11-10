@@ -184,7 +184,6 @@ const createCardOrder = async (session, next) => {
       }));
       await ProductModel.bulkWrite(bulkOption, {});
 
-      // Clear cart based on cartId
       await CartModel.findByIdAndDelete(cartId);
     }
   } catch (error) {
@@ -212,6 +211,7 @@ exports.webhookCheckout = asyncHandler(async (req, res, next) => {
   }
 
   if (event.type === "checkout.session.completed") {
+    console.log("Webhook completed -------:");
     createCardOrder(event.data.object, next);
   }
 

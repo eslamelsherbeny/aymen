@@ -2,6 +2,9 @@
   "name": "noadjs-aymenstore-api-v1",
   "version": "1.0.0",
   "main": "server.js",
+  "engines": {
+    "node": ">=20.15.1"
+  },
   "scripts": {
     "dev": "nodemon server.js",
     "prod": "set NODE_ENV=production && node server.js"

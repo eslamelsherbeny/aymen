@@ -203,7 +203,7 @@ exports.webhookCheckout = asyncHandler(async (req, res, next) => {
 
       sig,
 
-      "whsec_H5zNp6il8QVTHhRPskfLs0aaeoL2bTR"
+      "whsec_H5zNp6il8QVTHhRPskfLs0aaeoL2bTRE"
     );
   } catch (err) {
     console.log("Webhook Error:", err.message);

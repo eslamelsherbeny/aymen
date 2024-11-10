@@ -200,8 +200,10 @@ exports.webhookCheckout = asyncHandler(async (req, res, next) => {
   try {
     event = stripe.webhooks.constructEvent(
       req.body,
+
       sig,
-      "whsec_H5zNp6il8QVTHhRPskfLs0aaeoL2bTRE"
+
+      "whsec_H5zNp6il8QVTHhRPskfLs0aaeoL2bTR"
     );
   } catch (err) {
     console.log("Webhook Error:", err.message);

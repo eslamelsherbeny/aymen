@@ -10,6 +10,7 @@ const ProductModel = require("../models/productModel");
 const CartModel = require("../models/cartModel");
 const FactoryHandler = require("./factoryHandler");
 const ApiError = require("../utlis/apiErrors");
+const userModel = require("../models/userModel");
 
 exports.createCashOrder = asyncHandler(async (req, res, next) => {
   const { shippingAddress } = req.body;
@@ -137,4 +138,82 @@ exports.createCheckoutSession = asyncHandler(async (req, res, next) => {
     data: session,
     url: session.url,
   });
+});
+
+const createCardOrder = async (session, next) => {
+  try {
+    const cartId = session.client_reference_id;
+    const shippingAddress = session.metadata;
+    const orderPrice = session.amount_total / 100;
+    const customerEmail = session.customer_email;
+
+    if (!cartId || !customerEmail) {
+      console.error("Missing necessary data for creating order.");
+      return;
+    }
+
+    const cart = await CartModel.findById(cartId);
+    const user = await userModel.findOne({ email: customerEmail });
+
+    if (!cart) {
+      console.error("Cart not found");
+      return next(new ApiError("Cart not found", 404));
+    }
+
+    if (!user) {
+      console.error("User not found");
+      return next(new ApiError("User not found", 404));
+    }
+
+    const order = await OrderModel.create({
+      user: user._id,
+      cartItems: cart.cartItems,
+      shippingAddress,
+      totalOrderPrice: orderPrice,
+      isPaid: true,
+      paidAt: Date.now(),
+      paymentMethodType: "Card",
+    });
+
+    if (order) {
+      const bulkOption = cart.cartItems.map((item) => ({
+        updateOne: {
+          filter: { _id: item.product },
+          update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
+        },
+      }));
+      await ProductModel.bulkWrite(bulkOption, {});
+
+      // Clear cart based on cartId
+      await CartModel.findByIdAndDelete(cartId);
+    }
+  } catch (error) {
+    console.error("Error creating order:", error);
+  }
+};
+
+exports.webhookCheckout = asyncHandler(async (req, res, next) => {
+  console.log("Webhook received:", req.body);
+  const sig = req.headers["stripe-signature"];
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      "whsec_H5zNp6il8QVTHhRPskfLs0aaeoL2bTRE"
+    );
+  } catch (err) {
+    console.log("Webhook Error:", err.message);
+    return res
+      .status(400)
+      .send(`Webhook Error-------------------------: ${err.message}`);
+  }
+
+  if (event.type === "checkout.session.completed") {
+    createCardOrder(event.data.object, next);
+  }
+
+  res.status(200).json({ received: true });
 });

@@ -11,6 +11,8 @@ const ApiError = require("./utlis/apiErrors");
 const globalError = require("./middleWares/errorMiddlware");
 const mountRoutes = require("./routes");
 
+const { webhookCheckout } = require("./services/orderServices");
+
 dotenv.config();
 
 dbConnection();
@@ -42,6 +44,12 @@ app.use(cors());
 app.options("*", cors());
 
 app.use(compression());
+
+app.post(
+  "/webhook-checkout",
+  express.raw({ type: "application/json" }),
+  webhookCheckout
+);
 
 const PORT = process.env.PORT || 5000;
 
